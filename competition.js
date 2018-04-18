@@ -24,6 +24,7 @@ function competitionFilterData(data, comp, category, phase, group) {
 			rows.push(row);
 		}
 	});
+	console.debug(rows);
 	return rows;
 };
 
@@ -158,10 +159,10 @@ Vue.component('competition-matrix', {
 			  '  <div class="table-responsive"><table class="comp table table-bordered">' +
 			  '    <tr>' +
 			  '      <th></th>' +
-			  '      <th v-for="teamVisitor in teams">{{ teamVisitor }}</th>' +
+			  '      <th v-for="teamVisitor in teams"><small>{{ teamVisitor }}</small></th>' +
 			  '    </tr>' +
 			  '    <tr v-for="(teamLocal, idxL) in teams">' +
-			  '       <th>{{ teamLocal }}</th>' +
+			  '       <th><small>{{ teamLocal }}</small></th>' +
 			  '       <td v-for="(teamVisitor, idxV) in teams" v-bind:class="{\'table-secondary\': idxV >= idxL}" class="text-center align-middle"><span v-html="results[teamLocal][teamVisitor]"></span></td>' +
 			  '    </tr>' +
 			  '  </table></div>' +
@@ -190,7 +191,7 @@ Vue.component('competition-matrix-groups', {
 			  '  <div v-for="group in groups">' +
 			  '		<competition-matrix v-bind:comp="comp" v-bind:category="category" v-bind:phase="phase" v-bind:group="group"></competition-matrix>' +
 			  '  </div>' +
-			  '</div>',
+			  '</div></div>',
 });
 
 
@@ -211,8 +212,6 @@ Vue.component('competition-classif', {
 			});
 
 			competitionResultTennis(row, teams[row[IDX_TEAM_L]], teams[row[IDX_TEAM_V]]);
-			competitionResultTennis(row, teams[row[IDX_TEAM_L]], teams[row[IDX_TEAM_V]]);
-
 		});
 
 		teams = Object.values(teams);
@@ -251,7 +250,7 @@ Vue.component('competition-classif', {
 			  '        <th class="text-right"><acronym title="% Juegos Ganados">JG%</acronym></th>' +
 			  '      </tr></thead>' +
 			  '      <tr v-for="team in teams">' +
-			  '        <td>{{ team.name }} <small class="text-muted text-small" title="Grupo">({{ team.group }})</small></td>' +
+			  '        <td>{{ team.name }} <small v-if="team.group" class="text-muted text-small" title="Grupo">({{ team.group }})</small></td>' +
 			  '        <td class="text-right">{{ team.matches_played }}</td>' +
 			  '        <td class="text-right font-weight-bold text-success">{{ team.matches_won }}</td>' +
 			  '        <td class="text-right font-weight-bold text-danger">{{ team.matches_lost }}</td>' +
@@ -280,24 +279,9 @@ Vue.component('competition-ranking', {
 
 			[row[IDX_TEAM_L], row[IDX_TEAM_V]].forEach(function(team, teamIdx) {
 				if (! (team in teams)) {
-					teams[team] = {
-						name: team,
-						group: row[IDX_GROUP],
-						matches_played: 0,
-						matches_won: 0,
-						matches_lost: 0,
-						sets_played: 0,
-						sets_won: 0,
-						sets_lost: 0,
-						games_played: 0,
-						games_won: 0,
-						games_lost: 0,
-						tiebreaks_played: 0,
-						tiebreaks_won: 0,
-						tiebreaks_lost: 0,
-						abandoned: 0,
-						ranking: 1000
-					};
+					if (! (team in teams)) {
+						teams[team] = competitionStats(team);
+					}
 				}
 			});
 
@@ -324,7 +308,6 @@ Vue.component('competition-ranking', {
 		}
 	},
 	template: '<div>' +
-			  '  <div><b>{{ category }} - Fase {{ phase }}</b></div>' +
 			  '    <div class="table-responsive"><table class="comp table table-bordered table-hover tablesaw tablesaw-stack" data-tablesaw-mode="stack" data-tablesaw-sortable data-tablesaw-sortable-switch>' +
 			  '      <thead><tr>' +
 			  '        <th>Equipo</th>' +
@@ -340,8 +323,8 @@ Vue.component('competition-ranking', {
 			  '        <th class="text-right"><acronym title="% Sets Ganados">SG%</acronym></th>' +
 			  '        <th class="text-right"><acronym title="% Juegos Ganados">JG%</acronym></th>' +
 			  '      </tr></thead>' +
-			  '      <tr v-for="team in teams">' +
-			  '        <td>{{ team.name }} <small class="text-muted text-small" title="Grupo">({{ team.group }})</small></td>' +
+			  '      <tr v-for="team in teams" v-if="team.matches_played > 0">' +
+			  '        <td>{{ team.name }} <small class="text-muted text-small" v-if="team.group" title="Grupo">({{ team.group }})</small></td>' +
 			  '        <td class="text-right">{{ team.matches_played }}</td>' +
 			  '        <td class="text-right font-weight-bold text-success">{{ team.matches_won }}</td>' +
 			  '        <td class="text-right font-weight-bold text-danger">{{ team.matches_lost }}</td>' +
