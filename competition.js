@@ -24,7 +24,6 @@ function competitionFilterData(data, comp, category, phase, group) {
 			rows.push(row);
 		}
 	});
-	console.debug(rows);
 	return rows;
 };
 
@@ -159,7 +158,7 @@ Vue.component('competition-matrix', {
 			  '  <div class="table-responsive"><table class="comp table table-bordered">' +
 			  '    <tr>' +
 			  '      <th></th>' +
-			  '      <th v-for="teamVisitor in teams"><small>{{ teamVisitor }}</small></th>' +
+			  '      <th v-for="teamVisitor in teams" class="text-right"><small>{{ teamVisitor }}</small></th>' +
 			  '    </tr>' +
 			  '    <tr v-for="(teamLocal, idxL) in teams">' +
 			  '       <th><small>{{ teamLocal }}</small></th>' +
@@ -291,8 +290,8 @@ Vue.component('competition-ranking', {
 
 		teams = Object.values(teams);
 		teams.sort(function(a, b) {
-			var matchesDiff = b.matches_won - a.matches_won;
-			if (matchesDiff != 0) return matchesDiff;
+			var matchesRatioDiff = ((b.matches_won / b.matches_played) || 0) - ((a.matches_won / a.matches_played) || 0);
+			if (matchesRatioDiff != 0) return matchesRatioDiff;
 
 			var setsRatioDiff = ((b.sets_won / b.sets_played) || 0) - ((a.sets_won / a.sets_played) || 0);
 			if (setsRatioDiff != 0) return setsRatioDiff;
@@ -320,6 +319,7 @@ Vue.component('competition-ranking', {
 			  '        <th class="text-right"><acronym title="Juegos Jugados">JJ</acronym></th>' +
 			  '        <th class="text-right"><acronym title="Juegos Ganados">JG</acronym></th>' +
 			  '        <th class="text-right"><acronym title="Juegos Perdidos">JP</acronym></th>' +
+			  '        <th class="text-right"><acronym title="% Partidos Ganados">PG%</acronym></th>' +
 			  '        <th class="text-right"><acronym title="% Sets Ganados">SG%</acronym></th>' +
 			  '        <th class="text-right"><acronym title="% Juegos Ganados">JG%</acronym></th>' +
 			  '      </tr></thead>' +
@@ -334,6 +334,7 @@ Vue.component('competition-ranking', {
 			  '        <td class="text-right">{{ team.games_played }}</td>' +
 			  '        <td class="text-right text-success">{{ team.games_won }}</td>' +
 			  '        <td class="text-right text-danger">{{ team.games_lost }}</td>' +
+			  ' 	   <td class="text-right font-italic font-weight-bold">{{ (team.matches_won / team.matches_played) | percentage }}</td>' +
 			  ' 	   <td class="text-right font-italic">{{ (team.sets_won / team.sets_played) | percentage }}</td>' +
 			  '        <td class="text-right font-italic">{{ (team.games_won / team.games_played) | percentage }}</td>' +
 			  '      </tr>' +
@@ -378,7 +379,7 @@ Vue.filter('percentage', function(value, decimals) {
 
 
 function initCompetitionTables(dataUrl) {
-	console.debug("Initializing competition tables.")
+	//console.debug("Initializing competition tables.")
 
 	CSV.fetch({url: dataUrl}).then(function(csvdata) {
 
